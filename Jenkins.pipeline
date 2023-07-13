@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    stages {
+         stage('Delete Olds') {
+            steps{
+                dir('/var/jenkins_home/workspace/Docker-Pipeline-test') {
+                    sh 'rm -rf jenkins101'
+                    sh 'docker container rm nodeapp --force'
+                    sh 'docker image rm node-app:latest --force'
+                }
+            }
+        }
+         stage('Clone Repo') {
+            steps {
+                dir('/var/jenkins_home/workspace/Docker-Pipeline-test') {
+                    sh 'git clone https://github.com/bakiun/jenkins101.git'
+                }
+            }
+        }
+        stage('Dockerize') {
+            steps {
+                dir('/var/jenkins_home/workspace/Docker-Pipeline-test/jenkins101') {
+                    sh 'docker build -t node-app:latest .'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps{
+                sh 'docker run --name nodeapp -d -p 3000:3000 node-app:latest'
+            }
+        }
+    }
+}
